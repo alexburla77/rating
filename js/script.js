@@ -33,7 +33,7 @@ function initRatings() {
   }
 
   function setRating(rating) {
-    const ratingItems = rating.querySelectorAll('.rating__item'
+    const ratingItems = rating.querySelectorAll('.rating__item');
 
     for (let index = 0; index < ratingItems.length; index++) {
       const ratingItem = ratingItems[index];
