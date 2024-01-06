@@ -1,168 +1,103 @@
 "use strict";
 
-const ratings = document.querySelectorAll('.rating');
+/* Модуль зіркового рейтингу */
 
-if (ratings.length > 0) {
-  initRatings();
-}
+	const ratings = document.querySelectorAll('.rating');
+	if (ratings.length > 0) {
+		initRatings();
+	}
+	// Основна функція
+	function initRatings() {
+		let ratingActive, ratingValue;
+		// "Бігаємо" по всіх рейтингах на сторінці
+		for (let index = 0; index < ratings.length; index++) {
+			const rating = ratings[index];
+			initRating(rating);
+		}
+		// Ініціалізуємо конкретний рейтинг
+		function initRating(rating) {
+			initRatingVars(rating);
 
-function initRatings() {
-  let ratingActive, ratingValue;
+			setRatingActiveWidth();
 
-  for (let index = 0; index < ratings.length; index++) {
-    const rating = ratings[index];
-    initRating(rating);
-  }
+			if (rating.classList.contains('rating_set')) {
+				setRating(rating);
+			}
+		}
+		// Ініціалізація змінних
+		function initRatingVars(rating) {
+			ratingActive = rating.querySelector('.rating__active');
+			ratingValue = rating.querySelector('.rating__value');
+		}
+		// Змінюємо ширину активних зірок
+		function setRatingActiveWidth(index = ratingValue.innerHTML) {
+			const ratingActiveWidth = index / 0.05;
+			ratingActive.style.width = `${ratingActiveWidth}%`;
+		}
+		// Можливість вказати оцінку
+		function setRating(rating) {
+			const ratingItems = rating.querySelectorAll('.rating__item');
+			for (let index = 0; index < ratingItems.length; index++) {
+				const ratingItem = ratingItems[index];
+				ratingItem.addEventListener("mouseenter", function (e) {
+					// Оновлення змінних
+					initRatingVars(rating);
+					// Оновлення активних зірок
+					setRatingActiveWidth(ratingItem.value);
+				});
+				ratingItem.addEventListener("mouseleave", function (e) {
+					// Оновлення активних зірок
+					setRatingActiveWidth();
+				});
+				ratingItem.addEventListener("click", function (e) {
+					// Оновлення змінних
+					initRatingVars(rating);
 
-  function initRating(rating) {
-    initRatingVars(rating);
-    setRatingActiveWidth();
-    if (rating.classList.contains('rating__set')) {
-      setRating(rating);
-    }
-  }
+					if (rating.dataset.ajax) {
+						// "Надіслати" на сервер
+						setRatingValue(ratingItem.value, rating);
+					} else {
+						// Відобразити вказану оцінку
+						ratingValue.innerHTML = index + 1;
+						setRatingActiveWidth();
+					}
+				});
+			}
+		}
+		async function setRatingValue(value, rating) {
+			if (!rating.classList.contains('rating_sending')) {
+				rating.classList.add('rating_sending');
 
-  function initRatingVars(rating) {
-    ratingActive = rating.querySelector('.rating__active');
-    ratingValue = rating.querySelector('.rating__value');
-  }
+				// Надсилання даних (value) на сервер
+				let response = await fetch('rating.json', {
+					method: 'GET',
 
-  function setRatingActiveWidth(index = ratingValue.innerHTML) {
-    const ratingActiveWidth = index / 0.05;
-    ratingActive.style.width = `${ratingActiveWidth}%`;
-  }
+					//body: JSON.stringify({
+					//	userRating: value
+					//}),
+					//headers: {
+					//	'content-type': 'application/json'
+					//}
 
-  function setRating(rating) {
-    const ratingItems = rating.querySelectorAll('.rating__item');
+				});
+				if (response.ok) {
+					const result = await response.json();
 
-    for (let index = 0; index < ratingItems.length; index++) {
-      const ratingItem = ratingItems[index];
+					// Отримуємо новий рейтинг
+					const newRating = result.newRating;
 
-      ratingItem.addEventListener('mouseenter', function(e) {
-        initRatingVars(rating);
+					// Виведення нового середнього результату
+					ratingValue.innerHTML = newRating;
 
-        setRatingActiveWidth(ratingItem.value);
-      });
-      ratingItem.addEventListener('mouseleave', function(e) {
+					// Оновлення активних зірок
+					setRatingActiveWidth();
 
-        setRatingActiveWidth();
-      });
-      ratingItem.addEventListener('click', function(e) {
-        initRatingVars(rating);
+					rating.classList.remove('rating_sending');
+				} else {
+					alert("Помилка");
 
-        ratingValue.innerHTML = index + 1;
-        setRatingActiveWidth();
-      });
-    }
-  }
-
-}
-
-
-
-
-
-
-
-
-// const ratings = document.querySelectorAll('.rating');
-
-// if (ratings.length > 0) {
-//   initRatings();
-// }
-
-
-// function initRatings() {
-//   let ratingActive, ratingValue;
-
-//   for (let index = 0; index < ratings.length; index++) {
-//     const rating = ratings[index];
-//     initRating(rating);
-//   }
-
-//   function initRating(rating) {
-//     initRatingVars(rating);
-
-//     setRatingActiveWidth();
-
-//     if (rating.classList.contains('rating__set')) {
-//       setRating(rating);
-//     }
-//   }
-
-
-//   function initRatingVars(rating) {
-//     ratingActive = rating.querySelector('.rating__active');
-//     ratingValue = rating.querySelector('.rating__value');
-//   }
-
-//   function setRatingActiveWidth(index = ratingValue.innerHTML) {
-//     let ratingActiveWidth = index / 0.05;
-//     ratingActive.style.width = `${ratingActiveWidth}%`;
-//   }
-
-
-//   function setRating(rating) {
-//       const ratingItems = rating.querySelectorAll('.rating__item');
-
-//       for (let index = 0; index < ratingItems.length; index++) {
-//         const ratingItem = ratingItems[index];
-//         ratingItem.addEventListener('mouseenter', function(e) {
-//           initRatingVars(rating);
-
-//           setRatingActiveWidth(ratingItem.value);
-//         });
-//         ratingItem.addEventListener('mouseleave', function(e) {
-//           setRatingActiveWidth();
-//         });
-
-//         ratingItem.addEventListener('click', function(e) {
-//           initRatingVars(rating);
-
-//           if (rating.dataset.ajax) {
-//             setRatingValue(ratingItem.value, rating);
-//           } else {
-//             ratingValue.innerHTML = index + 1;
-//             setRatingActiveWidth();
-//           }
-//         });
-//       }
-//   }
-
-//   async function setRatingValue(value, rating) {
-//     if (!rating.classList.contains('rating_sending')) {
-//       rating.classList.add('rating_sending');
-
-//       // Надсилання даних (value) на сервер
-//       let response = await fetch('rating.json', {
-//         method: 'GET',
-
-//         //body: JSON.stringify({
-//         //	userRating: value
-//         //}),
-//         //headers: {
-//         //	'content-type': 'application/json'
-//         //}
-
-//       });
-//       if (response.ok) {
-//         const result = await response.json();
-
-//         // Отримуємо новий рейтинг
-//         const newRating = result.newRating;
-
-//         // Виведення нового середнього результату
-//         ratingValue.innerHTML = newRating;
-
-//         // Оновлення активних зірок
-//         setRatingActiveWidth();
-
-//         rating.classList.remove('rating_sending');
-//       } else {
-//         alert("Помилка");
-
-//         rating.classList.remove('rating_sending');
-//       }
-//     }
-//   }
-// }
+					rating.classList.remove('rating_sending');
+				}
+			}
+		}
+	}
